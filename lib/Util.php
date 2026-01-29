@@ -32,24 +32,96 @@ class Util {
     
     /**
      * Log generation run statistics
-     * 
-     * @param array $stats Statistics array with keys: year, fetched_count, kept_count, duration, warnings, errors
+     *
+     * @param array $stats Statistics array with keys: year, fetched_count, kept_count, duration, warnings, errors, calendar_id
      * @param string $logs_dir Directory for log files
+     * @param string $data_dir Directory for calendar data (for per-calendar logs)
      */
-    public static function logGenerationRun($stats, $logs_dir = null) {
+    public static function logGenerationRun($stats, $logs_dir = null, $data_dir = null) {
         $year = $stats['year'] ?? 'unknown';
         $fetched = $stats['fetched_count'] ?? 0;
         $kept = $stats['kept_count'] ?? 0;
         $duration = $stats['duration'] ?? 0;
         $warnings = $stats['warnings'] ?? 0;
         $errors = $stats['errors'] ?? 0;
-        
+        $calendar_id = $stats['calendar_id'] ?? null;
+
         $message = sprintf(
             "Generation completed - Year: %s, Fetched: %d, Kept: %d, Duration: %.2fs, Warnings: %d, Errors: %d",
             $year, $fetched, $kept, $duration, $warnings, $errors
         );
-        
+
+        // Log to global log
         self::log($message, 'INFO', $logs_dir);
+
+        // Also log to per-calendar log if calendar_id provided
+        if ($calendar_id && $data_dir) {
+            self::logToCalendar($calendar_id, $message, 'INFO', $data_dir);
+        }
+    }
+
+    /**
+     * Log a message to a calendar-specific log file
+     *
+     * @param string $calendar_id Calendar ID
+     * @param string $message Log message
+     * @param string $level Log level (INFO, WARNING, ERROR)
+     * @param string $data_dir Directory for calendar data
+     */
+    public static function logToCalendar($calendar_id, $message, $level = 'INFO', $data_dir = null) {
+        if (!$data_dir) {
+            $data_dir = __DIR__ . '/../data';
+        }
+
+        $log_file = $data_dir . '/calendar-' . $calendar_id . '.log';
+
+        $timestamp = date('Y-m-d H:i:s');
+        $log_entry = "[{$timestamp}] {$level}: {$message}" . PHP_EOL;
+
+        file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+    }
+
+    /**
+     * Get the last N lines from a calendar's log file
+     *
+     * @param string $calendar_id Calendar ID
+     * @param string $data_dir Directory for calendar data
+     * @param int $lines Number of lines to return (0 = all)
+     * @return string|null Log content or null if not found
+     */
+    public static function getCalendarLog($calendar_id, $data_dir = null, $lines = 50) {
+        if (!$data_dir) {
+            $data_dir = __DIR__ . '/../data';
+        }
+
+        $log_file = $data_dir . '/calendar-' . $calendar_id . '.log';
+
+        if (!file_exists($log_file)) {
+            return null;
+        }
+
+        if ($lines <= 0) {
+            return file_get_contents($log_file);
+        }
+
+        // Get last N lines efficiently
+        $file = new SplFileObject($log_file, 'r');
+        $file->seek(PHP_INT_MAX);
+        $total_lines = $file->key();
+
+        $start = max(0, $total_lines - $lines);
+        $output = [];
+
+        $file->seek($start);
+        while (!$file->eof()) {
+            $line = $file->current();
+            if (trim($line) !== '') {
+                $output[] = $line;
+            }
+            $file->next();
+        }
+
+        return implode('', $output);
     }
 
     /**

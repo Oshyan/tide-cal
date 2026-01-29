@@ -74,6 +74,7 @@ $form_data = [
 $result_message = '';
 $result_type = '';
 $calendar_url = '';
+$calendar_id_for_log = '';
 
 // Handle form submission (load complex logic only when needed)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate') {
@@ -113,7 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Get or create calendar entry
         $calendar_entry = $calendar_manager->getOrCreateCalendar($working_config);
         $calendar_id = $calendar_entry['id'];
-        
+        $calendar_id_for_log = $calendar_id;
+
         // Generate calendar URL
         $calendar_url = $calendar_manager->getCalendarUrl($calendar_id, $default_config['base_url']);
         
@@ -126,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stats['calendar_id'] = $calendar_id;
         $stats['calendar_url'] = $calendar_url;
         
-        // Log the generation run
-        Util::logGenerationRun($stats, __DIR__ . '/logs');
+        // Log the generation run (both global and per-calendar)
+        Util::logGenerationRun($stats, __DIR__ . '/logs', __DIR__ . '/data');
         
         $result_type = 'success';
         $result_message = buildSuccessMessage($stats, $working_config);
@@ -1103,8 +1105,21 @@ function buildSuccessMessage($stats, $config) {
             </div>
             <?php endif; ?>
 
+            <?php if ($calendar_id_for_log): ?>
+            <div id="log-section" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="font-size: 0.85rem; color: #666;">📋 Generation Log</strong>
+                    <button type="button" onclick="document.getElementById('log-section').style.display='none'" style="background: none; border: none; cursor: pointer; font-size: 1rem;">×</button>
+                </div>
+                <pre id="log-content" style="background: #f5f5f5; padding: 0.75rem; border-radius: 4px; font-size: 0.75rem; max-height: 150px; overflow-y: auto; margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+            </div>
+            <?php endif; ?>
+
             <div class="button-section" style="margin-top: 1rem;">
                 <button class="btn secondary" type="button" onclick="closeResultModal()">Close</button>
+                <?php if ($calendar_id_for_log): ?>
+                <button class="btn secondary" type="button" onclick="viewLog('<?php echo htmlspecialchars($calendar_id_for_log); ?>')">📋 View Log</button>
+                <?php endif; ?>
                 <a href="calendars.php" class="btn secondary">📅 All Calendars</a>
             </div>
         </div>
@@ -1372,6 +1387,31 @@ function buildSuccessMessage($stats, $config) {
             closeResultModal();
         }
     });
+
+    function viewLog(calendarId) {
+        const logSection = document.getElementById('log-section');
+        const logContent = document.getElementById('log-content');
+        if (!logSection || !logContent) return;
+
+        logContent.textContent = 'Loading...';
+        logSection.style.display = 'block';
+
+        fetch('get_log.php?id=' + encodeURIComponent(calendarId) + '&lines=30')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    logContent.textContent = 'Error: ' + data.error;
+                } else if (data.log) {
+                    logContent.textContent = data.log;
+                } else {
+                    logContent.textContent = data.message || 'No log entries yet';
+                }
+            })
+            .catch(error => {
+                logContent.textContent = 'Failed to load log: ' + error.message;
+            });
+    }
+
     function syncFilterCard(toggleId) {
         const checkbox = document.getElementById(toggleId);
         const card = document.querySelector(`.filter-card[data-toggle="${toggleId}"]`);
