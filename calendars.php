@@ -354,30 +354,59 @@ uasort($all_calendars, function($a, $b) {
         $ics_content = $file_exists ? file_get_contents($ics_file) : '';
         $event_counts = $file_exists ? Util::countIcsEventsByType($ics_content) : ['low' => 0, 'high' => 0, 'sunrise' => 0, 'sunset' => 0, 'total' => 0];
 
-        // Build edit URL with params
+        // Build edit URL with ALL params
         $edit_params = [
             'edit' => $calendar['id'],
+            // Station info
             'station_id' => $params['station_id'] ?? '',
             'station_name' => $params['station_name'] ?? '',
             'lat' => $params['lat'] ?? '',
             'lon' => $params['lon'] ?? '',
             'timezone' => $params['timezone'] ?? '',
+            // Basic settings
             'year' => $params['year'] ?? date('Y'),
             'unit' => $params['unit'] ?? 'ft',
         ];
-        // Add tide filter params
+
+        // Low tide params
         if (!empty($params['include_low_tides'])) {
             $edit_params['include_low_tides'] = '1';
             $edit_params['min_low_tide_value'] = $params['min_low_tide_value'] ?? 0;
             $edit_params['low_time_filter'] = $params['low_time_filter'] ?? 'none';
+            $edit_params['low_minutes_after_sunrise'] = $params['low_minutes_after_sunrise'] ?? 0;
+            $edit_params['low_minutes_before_sunset'] = $params['low_minutes_before_sunset'] ?? 0;
+            if (!empty($params['low_earliest_time_enabled'])) {
+                $edit_params['low_earliest_time_enabled'] = '1';
+                $edit_params['low_earliest_time'] = $params['low_earliest_time'] ?? '00:00';
+            }
+            if (!empty($params['low_latest_time_enabled'])) {
+                $edit_params['low_latest_time_enabled'] = '1';
+                $edit_params['low_latest_time'] = $params['low_latest_time'] ?? '23:59';
+            }
         }
+
+        // High tide params
         if (!empty($params['include_high_tides'])) {
             $edit_params['include_high_tides'] = '1';
             $edit_params['high_tide_min_value'] = $params['high_tide_min_value'] ?? 0;
             $edit_params['high_time_filter'] = $params['high_time_filter'] ?? 'none';
+            $edit_params['high_minutes_after_sunrise'] = $params['high_minutes_after_sunrise'] ?? 0;
+            $edit_params['high_minutes_before_sunset'] = $params['high_minutes_before_sunset'] ?? 0;
+            if (!empty($params['high_earliest_time_enabled'])) {
+                $edit_params['high_earliest_time_enabled'] = '1';
+                $edit_params['high_earliest_time'] = $params['high_earliest_time'] ?? '00:00';
+            }
+            if (!empty($params['high_latest_time_enabled'])) {
+                $edit_params['high_latest_time_enabled'] = '1';
+                $edit_params['high_latest_time'] = $params['high_latest_time'] ?? '23:59';
+            }
         }
+
+        // Sun event params
         if (!empty($params['include_sunrise_events'])) $edit_params['include_sunrise_events'] = '1';
         if (!empty($params['include_sunset_events'])) $edit_params['include_sunset_events'] = '1';
+        if (!empty($params['sun_events_match_tide_days'])) $edit_params['sun_events_match_tide_days'] = '1';
+
         $edit_url = 'index.php?' . http_build_query($edit_params);
         ?>
         <div class="calendar-row">

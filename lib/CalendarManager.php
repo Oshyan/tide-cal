@@ -69,28 +69,36 @@ class CalendarManager {
      * @param array $params Calendar parameters
      * @return array Calendar entry with id, params, created_at, updated_at
      */
-    public function getOrCreateCalendar($params) {
-        $calendar_id = $this->generateCalendarId($params);
+    public function getOrCreateCalendar($params, $force_id = null) {
         $calendars = $this->loadCalendars();
-        
         $now = date('Y-m-d H:i:s');
-        
-        if (isset($calendars[$calendar_id])) {
-            // Update existing calendar
+
+        // If editing an existing calendar, use its ID
+        if ($force_id && isset($calendars[$force_id])) {
+            $calendar_id = $force_id;
             $calendars[$calendar_id]['updated_at'] = $now;
-            $calendars[$calendar_id]['params'] = $params; // Update in case of minor changes
+            $calendars[$calendar_id]['params'] = $params;
         } else {
-            // Create new calendar entry
-            $calendars[$calendar_id] = [
-                'id' => $calendar_id,
-                'params' => $params,
-                'created_at' => $now,
-                'updated_at' => $now
-            ];
+            // Generate ID from params for new calendars
+            $calendar_id = $this->generateCalendarId($params);
+
+            if (isset($calendars[$calendar_id])) {
+                // Update existing calendar with same params
+                $calendars[$calendar_id]['updated_at'] = $now;
+                $calendars[$calendar_id]['params'] = $params;
+            } else {
+                // Create new calendar entry
+                $calendars[$calendar_id] = [
+                    'id' => $calendar_id,
+                    'params' => $params,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ];
+            }
         }
-        
+
         $this->saveCalendars($calendars);
-        
+
         return $calendars[$calendar_id];
     }
     

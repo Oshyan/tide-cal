@@ -43,35 +43,36 @@ if (!empty($station_id)) {
 }
 
 // Use station data if available, otherwise fall back to config/defaults
+// Note: POST takes priority over GET so that form submissions override URL parameters during edit
 $form_data = [
     'station_id' => $station_id,
-    'station_name' => $_GET['station_name'] ?? $station_data['name'] ?? $_POST['station_name'] ?? $default_config['station_name'],
-    'lat' => $_GET['lat'] ?? $station_data['lat'] ?? $_POST['lat'] ?? $default_config['lat'],
-    'lon' => $_GET['lon'] ?? $station_data['lon'] ?? $_POST['lon'] ?? $default_config['lon'],
+    'station_name' => $_POST['station_name'] ?? $_GET['station_name'] ?? $station_data['name'] ?? $default_config['station_name'],
+    'lat' => $_POST['lat'] ?? $_GET['lat'] ?? $station_data['lat'] ?? $default_config['lat'],
+    'lon' => $_POST['lon'] ?? $_GET['lon'] ?? $station_data['lon'] ?? $default_config['lon'],
     'timezone' => $_POST['timezone'] ?? $_GET['timezone'] ?? ($station_data['timezone'] ?? $default_config['timezone']),
-    'year' => $_GET['year'] ?? $_POST['year'] ?? $default_config['year'],
-    'unit' => $_GET['unit'] ?? $_POST['unit'] ?? $default_config['unit'],
+    'year' => $_POST['year'] ?? $_GET['year'] ?? $default_config['year'],
+    'unit' => $_POST['unit'] ?? $_GET['unit'] ?? $default_config['unit'],
     'include_low_tides' => getCheckboxValue('include_low_tides', $default_config['include_low_tides']),
-    'min_low_tide_value' => (float) ($_GET['min_low_tide_value'] ?? $_POST['min_low_tide_value'] ?? $default_config['min_low_tide_value']),
-    'low_time_filter' => $_GET['low_time_filter'] ?? $_POST['low_time_filter'] ?? $default_config['low_time_filter'],
-    'low_minutes_after_sunrise' => (int) ($_GET['low_minutes_after_sunrise'] ?? $_POST['low_minutes_after_sunrise'] ?? $default_config['low_minutes_after_sunrise']),
-    'low_minutes_before_sunset' => (int) ($_GET['low_minutes_before_sunset'] ?? $_POST['low_minutes_before_sunset'] ?? $default_config['low_minutes_before_sunset']),
+    'min_low_tide_value' => (float) ($_POST['min_low_tide_value'] ?? $_GET['min_low_tide_value'] ?? $default_config['min_low_tide_value']),
+    'low_time_filter' => $_POST['low_time_filter'] ?? $_GET['low_time_filter'] ?? $default_config['low_time_filter'],
+    'low_minutes_after_sunrise' => (int) ($_POST['low_minutes_after_sunrise'] ?? $_GET['low_minutes_after_sunrise'] ?? $default_config['low_minutes_after_sunrise']),
+    'low_minutes_before_sunset' => (int) ($_POST['low_minutes_before_sunset'] ?? $_GET['low_minutes_before_sunset'] ?? $default_config['low_minutes_before_sunset']),
     'low_earliest_time_enabled' => getCheckboxValue('low_earliest_time_enabled', $default_config['low_earliest_time_enabled']),
-    'low_earliest_time' => $_GET['low_earliest_time'] ?? $_POST['low_earliest_time'] ?? $default_config['low_earliest_time'],
+    'low_earliest_time' => $_POST['low_earliest_time'] ?? $_GET['low_earliest_time'] ?? $default_config['low_earliest_time'],
     'low_latest_time_enabled' => getCheckboxValue('low_latest_time_enabled', $default_config['low_latest_time_enabled']),
-    'low_latest_time' => $_GET['low_latest_time'] ?? $_POST['low_latest_time'] ?? $default_config['low_latest_time'],
+    'low_latest_time' => $_POST['low_latest_time'] ?? $_GET['low_latest_time'] ?? $default_config['low_latest_time'],
     'include_high_tides' => getCheckboxValue('include_high_tides', $default_config['include_high_tides']),
-    'high_tide_min_value' => (float) ($_GET['high_tide_min_value'] ?? $_POST['high_tide_min_value'] ?? $default_config['high_tide_min_value']),
-    'high_time_filter' => $_GET['high_time_filter'] ?? $_POST['high_time_filter'] ?? $default_config['high_time_filter'],
-    'high_minutes_after_sunrise' => (int) ($_GET['high_minutes_after_sunrise'] ?? $_POST['high_minutes_after_sunrise'] ?? $default_config['high_minutes_after_sunrise']),
-    'high_minutes_before_sunset' => (int) ($_GET['high_minutes_before_sunset'] ?? $_POST['high_minutes_before_sunset'] ?? $default_config['high_minutes_before_sunset']),
+    'high_tide_min_value' => (float) ($_POST['high_tide_min_value'] ?? $_GET['high_tide_min_value'] ?? $default_config['high_tide_min_value']),
+    'high_time_filter' => $_POST['high_time_filter'] ?? $_GET['high_time_filter'] ?? $default_config['high_time_filter'],
+    'high_minutes_after_sunrise' => (int) ($_POST['high_minutes_after_sunrise'] ?? $_GET['high_minutes_after_sunrise'] ?? $default_config['high_minutes_after_sunrise']),
+    'high_minutes_before_sunset' => (int) ($_POST['high_minutes_before_sunset'] ?? $_GET['high_minutes_before_sunset'] ?? $default_config['high_minutes_before_sunset']),
     'high_earliest_time_enabled' => getCheckboxValue('high_earliest_time_enabled', $default_config['high_earliest_time_enabled']),
-    'high_earliest_time' => $_GET['high_earliest_time'] ?? $_POST['high_earliest_time'] ?? $default_config['high_earliest_time'],
+    'high_earliest_time' => $_POST['high_earliest_time'] ?? $_GET['high_earliest_time'] ?? $default_config['high_earliest_time'],
     'high_latest_time_enabled' => getCheckboxValue('high_latest_time_enabled', $default_config['high_latest_time_enabled']),
-    'high_latest_time' => $_GET['high_latest_time'] ?? $_POST['high_latest_time'] ?? $default_config['high_latest_time'],
+    'high_latest_time' => $_POST['high_latest_time'] ?? $_GET['high_latest_time'] ?? $default_config['high_latest_time'],
     'include_sunrise_events' => getCheckboxValue('include_sunrise_events', $default_config['include_sunrise_events']),
     'include_sunset_events' => getCheckboxValue('include_sunset_events', $default_config['include_sunset_events']),
-    'sun_events_match_tide_days' => isset($_GET['sun_events_match_tide_days']) ? (bool)$_GET['sun_events_match_tide_days'] : (isset($_POST['sun_events_match_tide_days']) ? (bool)$_POST['sun_events_match_tide_days'] : $default_config['sun_events_match_tide_days'])
+    'sun_events_match_tide_days' => isset($_POST['sun_events_match_tide_days']) ? (bool)$_POST['sun_events_match_tide_days'] : (isset($_GET['sun_events_match_tide_days']) ? (bool)$_GET['sun_events_match_tide_days'] : $default_config['sun_events_match_tide_days'])
 ];
 
 // Initialize variables
@@ -114,9 +115,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Create working config
         $working_config = array_merge($default_config, $form_data);
         $working_config['year'] = $resolved_year;
-        
+
+        // Check if we're editing an existing calendar (preserve its ID)
+        $edit_calendar_id = $_POST['edit_calendar_id'] ?? null;
+
         // Get or create calendar entry
-        $calendar_entry = $calendar_manager->getOrCreateCalendar($working_config);
+        $calendar_entry = $calendar_manager->getOrCreateCalendar($working_config, $edit_calendar_id);
         $calendar_id = $calendar_entry['id'];
         $calendar_id_for_log = $calendar_id;
 
@@ -491,6 +495,22 @@ function buildSuccessMessage($stats, $config) {
         .btn:active { transform: scale(0.98); }
         .btn.secondary { background: var(--gray-500); }
         .btn.secondary:hover { background: var(--gray-600); }
+
+        .edit-notice {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            margin-bottom: 0.75rem;
+        }
+        .edit-notice code {
+            background: rgba(0,0,0,0.1);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
 
         /* Compact form sections */
         .form-section {
@@ -1218,6 +1238,12 @@ function buildSuccessMessage($stats, $config) {
 
     <form method="POST">
         <input type="hidden" name="action" value="generate">
+        <?php if (isset($_GET['edit']) && preg_match('/^[a-f0-9]{12}$/', $_GET['edit'])): ?>
+        <input type="hidden" name="edit_calendar_id" value="<?php echo htmlspecialchars($_GET['edit']); ?>">
+        <div class="edit-notice">
+            Editing calendar <code><?php echo htmlspecialchars($_GET['edit']); ?></code> &mdash; changes will update the existing calendar URL
+        </div>
+        <?php endif; ?>
 
         <!-- Station & Settings -->
         <div class="form-section">
