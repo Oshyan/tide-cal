@@ -331,12 +331,12 @@ function generateTideCalendar($config, $calendar_manager, $calendar_id) {
             }
         }
         
-        if ($time_check['sunset_time'] === null && $time_check['sunrise_time'] === null && $time_check['passes'] === true) {
-            $stats['warnings']++;
-            error_log("No sunrise/sunset data for {$tide['ts_local']}, including event");
-        }
-        
         if ($include) {
+            // Only warn about missing sunrise/sunset for tides we're actually including
+            if ($time_check['sunset_time'] === null && $time_check['sunrise_time'] === null) {
+                $stats['warnings']++;
+                error_log("No sunrise/sunset data for {$tide['ts_local']}, including event");
+            }
             $ics_writer->addTideEvent($tide, $time_check);
             $kept_events[] = $tide;
             $qualifying_dates[substr($tide['ts_local'], 0, 10)] = true;
