@@ -1,0 +1,7 @@
+.DS_Store
+.fastembed_cache
+.claude
+/data
+/logs
+/cache
+*.log
