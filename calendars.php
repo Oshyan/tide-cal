@@ -399,22 +399,17 @@ uasort($all_calendars, function($a, $b) {
                 <?php endif; ?>
                 <?php if ($event_counts['total'] > 0): ?>
                 <span class="sep">|</span>
-                <span title="<?php
-                    $parts = [];
-                    if ($event_counts['low'] > 0) $parts[] = $event_counts['low'] . ' low';
-                    if ($event_counts['high'] > 0) $parts[] = $event_counts['high'] . ' high';
-                    if ($event_counts['sunrise'] > 0) $parts[] = $event_counts['sunrise'] . ' sunrise';
-                    if ($event_counts['sunset'] > 0) $parts[] = $event_counts['sunset'] . ' sunset';
-                    echo htmlspecialchars(implode(', ', $parts));
-                ?>"><?php
-                    // Compact display: tides + sun
+                <?php
                     $tide_count = $event_counts['low'] + $event_counts['high'];
                     $sun_count = $event_counts['sunrise'] + $event_counts['sunset'];
-                    $display_parts = [];
-                    if ($tide_count > 0) $display_parts[] = $tide_count . 't';
-                    if ($sun_count > 0) $display_parts[] = $sun_count . 's';
-                    echo implode('+', $display_parts);
-                ?></span>
+                ?>
+                <?php if ($tide_count > 0): ?>
+                <span title="<?php echo $event_counts['low']; ?> low, <?php echo $event_counts['high']; ?> high"><?php echo $tide_count; ?> tides</span>
+                <?php endif; ?>
+                <?php if ($tide_count > 0 && $sun_count > 0): ?><span class="sep">+</span><?php endif; ?>
+                <?php if ($sun_count > 0): ?>
+                <span title="<?php echo $event_counts['sunrise']; ?> sunrise, <?php echo $event_counts['sunset']; ?> sunset"><?php echo $sun_count; ?> sun</span>
+                <?php endif; ?>
                 <?php endif; ?>
                 <?php if (!$file_exists): ?>
                 <span style="color: var(--error);">missing</span>
