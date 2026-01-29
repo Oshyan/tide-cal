@@ -67,7 +67,7 @@ $form_data = [
     'high_latest_time' => $_POST['high_latest_time'] ?? $default_config['high_latest_time'],
     'include_sunrise_events' => getCheckboxValue('include_sunrise_events', $default_config['include_sunrise_events']),
     'include_sunset_events' => getCheckboxValue('include_sunset_events', $default_config['include_sunset_events']),
-    'sun_events_match_tide_days' => getCheckboxValue('sun_events_match_tide_days', $default_config['sun_events_match_tide_days'])
+    'sun_events_match_tide_days' => isset($_POST['sun_events_match_tide_days']) ? (bool)$_POST['sun_events_match_tide_days'] : $default_config['sun_events_match_tide_days']
 ];
 
 // Initialize variables
@@ -416,438 +416,656 @@ function buildSuccessMessage($stats, $config) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TideCal - Low Tide Calendar Generator</title>
-    <!-- Cache buster: v5.0 -->
+    <!-- Cache buster: v6.0 - Design overhaul -->
     <style>
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            max-width: 1100px; 
-            margin: 2rem auto; 
-            padding: 0 1rem; 
-            line-height: 1.6; 
-            color: #333;
+        :root {
+            --primary: #007cba;
+            --primary-dark: #005a87;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --success: #059669;
+            --success-bg: #d1fae5;
+            --error: #dc2626;
+            --error-bg: #fee2e2;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
         }
-        .header { 
-            text-align: center; 
-            margin-bottom: 2rem; 
-            padding-bottom: 1rem; 
-            border-bottom: 2px solid #e0e0e0;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 820px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+            color: var(--gray-800);
+            background: var(--gray-50);
         }
-        .nav { 
-            text-align: center; 
-            margin-bottom: 2rem;
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
         }
-        .btn { 
-            background: #007cba; 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            font-size: 16px; 
-            border-radius: 6px; 
+        .header h1 {
+            margin: 0 0 0.25rem;
+            font-size: 1.75rem;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--gray-500);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
-            margin: 0 5px;
-            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.15s, transform 0.1s;
         }
-        .btn:hover { 
-            background: #005a87;
+        .btn:hover { background: var(--primary-dark); }
+        .btn:active { transform: scale(0.98); }
+        .btn.secondary { background: var(--gray-500); }
+        .btn.secondary:hover { background: var(--gray-600); }
+
+        /* Compact form sections */
+        .form-section {
+            background: white;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--gray-200);
         }
-        .btn.secondary { 
-            background: #6c757d;
+        .form-section h3 {
+            margin: 0 0 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .btn.secondary:hover { 
-            background: #545b62;
-        }
-        .form-section { 
-            background: #f8f9fa; 
-            padding: 1.1rem; 
-            border-radius: 8px; 
-            margin-bottom: 1.5rem;
-        }
-        .form-section h3 { 
-            margin-top: 0; 
-            margin-bottom: 1rem;
-        }
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 0.9rem 1rem;
-            row-gap: 0.6rem;
-        }
-        .top-grid {
+
+        /* Top section - station left, settings right */
+        .setup-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1rem;
+            grid-template-columns: 1fr auto;
+            gap: 1.5rem;
             align-items: start;
         }
-        .form-group { 
-            margin-bottom: 0.5rem;
+        .setup-grid .station-col {
+            display: grid;
+            grid-template-columns: 85px 160px 110px;
+            gap: 0.5rem 0.75rem;
         }
-        .form-group.full-width { 
+        .setup-grid .station-col .full-row {
             grid-column: 1 / -1;
         }
-        .form-group label { 
-            display: block; 
-            font-weight: bold; 
-            margin-bottom: 0.25rem;
+        .setup-grid .settings-col {
+            padding-left: 1.5rem;
+            border-left: 1px solid var(--gray-200);
         }
-        .form-group input, 
-        .form-group select { 
-            width: 100%; 
-            padding: 6px 10px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px; 
+        .settings-col h4 {
+            margin: 0 0 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+        .settings-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .settings-row .inline-field {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .settings-row .inline-field label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            white-space: nowrap;
+        }
+        .settings-row .inline-field input,
+        .settings-row .inline-field select {
+            padding: 5px 8px;
+            font-size: 13px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+        }
+        .settings-row .inline-field input[type="number"] {
+            width: 65px;
+        }
+        .settings-row .inline-field select {
+            width: auto;
+        }
+        .settings-col .sun-section {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        .settings-col .sun-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin: 0 0 0.4rem;
+        }
+        .settings-col .sun-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .settings-col .sun-check {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+        }
+        .settings-col .sun-check input {
+            margin: 0;
+        }
+        .settings-col .sun-select-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .settings-col .sun-select-row label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        .settings-col .sun-select-row select {
+            font-size: 0.8rem;
+            padding: 3px 6px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group.span-2 {
+            grid-column: span 2;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            margin-bottom: 0.2rem;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm);
             font-size: 14px;
             box-sizing: border-box;
+            background: white;
         }
-        .form-group input:focus, 
-        .form-group select:focus { 
-            outline: none; 
-            border-color: #007cba; 
-            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.15);
         }
         .form-group input.grayed-out,
         .form-group input[readonly] {
-            background-color: #f5f5f5;
-            color: #666;
-            border-color: #ccc;
+            background-color: var(--gray-100);
+            color: var(--gray-500);
+            border-color: var(--gray-200);
         }
+        .form-group small {
+            display: block;
+            color: var(--gray-400);
+            margin-top: 0.15rem;
+            font-size: 11px;
+        }
+
         .search-results {
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
             background: white;
-            border: 1px solid #ddd;
+            border: 1px solid var(--gray-300);
             border-top: none;
-            border-radius: 0 0 4px 4px;
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .search-result-item {
             padding: 8px 12px;
             cursor: pointer;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 13px;
         }
-        .search-result-item:hover {
-            background-color: #f0f7ff;
-        }
-        .search-result-item:last-child {
-            border-bottom: none;
-        }
-        .form-group {
-            position: relative;
-        }
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .checkbox-row input[type="checkbox"] {
-            margin: 0;
-            transform: translateY(1px);
-        }
+        .search-result-item:hover { background-color: var(--gray-50); }
+        .search-result-item:last-child { border-bottom: none; }
+        .form-group { position: relative; }
+
+        /* Section headers - more compact */
         .section-header {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
-        .section-header h3 {
-            margin: 0;
-        }
+        .section-header h3 { margin: 0; }
         .section-subtitle {
             margin: 0;
-            color: #6b7280;
-            font-size: 0.9rem;
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            font-weight: 400;
         }
+
+        /* Tide filter cards - more compact */
         .filters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 16px;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
         .filter-card {
-            background: #fff;
-            border: 1px solid #e3e7ec;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 8px 20px rgba(16, 24, 40, 0.06);
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 0.75rem;
         }
-        .filter-card.is-disabled {
-            opacity: 0.65;
-        }
+        .filter-card.is-disabled { opacity: 0.5; }
+
         .filter-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 12px;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid var(--gray-200);
         }
         .filter-card-title {
             margin: 0;
-            font-size: 1.05rem;
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
         .filter-card-sub {
-            margin: 4px 0 0;
-            font-size: 0.85rem;
-            color: #6b7280;
+            margin: 2px 0 0;
+            font-size: 0.75rem;
+            color: var(--gray-400);
         }
+
+        /* Toggle switch - smaller */
         .toggle {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: #4b5563;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--gray-500);
             white-space: nowrap;
         }
         .switch {
             position: relative;
             display: inline-block;
-            width: 46px;
-            height: 26px;
+            width: 36px;
+            height: 20px;
         }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: 0.2s;
+            inset: 0;
+            background-color: var(--gray-300);
+            transition: 0.15s;
             border-radius: 999px;
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 14px;
+            width: 14px;
             left: 3px;
             top: 3px;
             background-color: #fff;
-            transition: 0.2s;
+            transition: 0.15s;
             border-radius: 50%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
-        .switch input:checked + .slider {
-            background-color: #007cba;
+        .switch input:checked + .slider { background-color: var(--primary); }
+        .switch input:checked + .slider:before { transform: translateX(16px); }
+
+        /* Filter content - natural sizing */
+        .filter-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
-        .switch input:checked + .slider:before {
-            transform: translateX(20px);
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
         }
-        .section-block {
-            border: 1px solid #edf1f5;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-            background: #f9fafb;
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
         }
-        .section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #4b5563;
+        .field-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gray-500);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.25rem;
         }
-        .section-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
+        .field-group input[type="number"] {
+            width: 60px;
+            padding: 5px 7px;
+            font-size: 13px;
         }
-        .inline-field {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px;
-            align-items: center;
+        .field-group select {
+            width: auto;
+            min-width: 120px;
+            padding: 5px 7px;
+            font-size: 13px;
         }
-        .inline-field label {
-            margin: 0;
+        .field-group small {
+            font-size: 10px;
+            color: var(--gray-400);
+            margin-top: 0.2rem;
         }
-        .inline-check {
+
+        /* Time window row */
+        .time-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .time-window-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            gap: 0.4rem;
+            padding: 0.4rem 0.5rem;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
         }
-        .input-compact {
-            max-width: 140px;
+        .time-window-row input[type="checkbox"] {
+            width: 13px;
+            height: 13px;
+            margin: 0;
         }
-        .input-time {
-            max-width: 140px;
+        .time-window-row label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            white-space: nowrap;
         }
-        .select-compact {
-            max-width: 320px;
+        .time-window-row input[type="time"] {
+            padding: 3px 5px;
+            font-size: 11px;
+            width: 85px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
         }
-        .time-row {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 8px;
+
+        /* Sun events - inline compact */
+        .sun-events-row {
+            display: flex;
             align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
         }
-        .time-row .input-time {
-            width: 100%;
+        .sun-check {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-        .form-group small { 
-            display: block; 
-            color: #666; 
-            margin-top: 0.1rem;
-            font-size: 12px;
+        .sun-check input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            margin: 0;
         }
-        .button-section { 
+        .sun-check label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+        .sun-check small {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            margin-left: 0.25rem;
+        }
+
+        .divider {
+            width: 1px;
+            height: 20px;
+            background: var(--gray-300);
+        }
+
+        /* Buttons */
+        .button-section {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 1.25rem 0 0.5rem;
         }
-        .result { 
-            margin: 2rem 0; 
-            padding: 1rem; 
-            border-radius: 8px;
+        .button-section + p {
+            text-align: center;
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            margin: 0.5rem 0 0;
         }
-        .result.success { 
-            background: #d4edda; 
-            border: 1px solid #c3e6cb; 
-            color: #155724;
+
+        /* Results */
+        .result {
+            margin: 0 0 1rem;
+            padding: 0.875rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
         }
-        .result.error { 
-            background: #f8d7da; 
-            border: 1px solid #f5c6cb; 
-            color: #721c24;
+        .result.success {
+            background: var(--success-bg);
+            border: 1px solid #a7f3d0;
+            color: #065f46;
         }
-        .subscription-url { 
-            background: #fff3cd; 
-            border: 1px solid #ffeaa7; 
-            padding: 1rem; 
-            border-radius: 8px; 
+        .result.error {
+            background: var(--error-bg);
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        .result pre {
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .subscription-url {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            padding: 1rem;
+            border-radius: var(--radius-md);
             margin-top: 1rem;
         }
-        .url-box { 
-            background: white; 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            border-radius: 4px; 
-            font-family: monospace; 
-            word-break: break-all; 
-            margin-top: 0.5rem;
+        .subscription-url h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1rem;
+        }
+        .subscription-url p {
+            margin: 0 0 0.75rem;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+
+        .url-box {
+            background: white;
+            border: 1px solid var(--gray-300);
+            padding: 10px 70px 10px 10px;
+            border-radius: var(--radius-sm);
+            font-family: ui-monospace, monospace;
+            font-size: 12px;
+            word-break: break-all;
             position: relative;
         }
         .copy-btn {
             position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #007cba;
+            top: 6px;
+            right: 6px;
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s;
         }
-        .copy-btn:hover {
-            background: #005a87;
-        }
-        .btn-clicked {
-            background: #27ae60 !important;
-            transform: scale(0.95);
+        .copy-btn:hover { background: var(--primary-dark); }
+
+        .calendar-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 0.75rem 0;
         }
         .btn-calendar-outline {
             background: white;
-            color: #333;
-            border: 2px solid #ddd;
-            padding: 12px 8px;
-            border-radius: 8px;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            padding: 10px 8px;
+            border-radius: var(--radius-md);
             cursor: pointer;
             font-size: 12px;
+            font-weight: 500;
             text-align: center;
-            transition: all 0.2s;
-            min-height: 70px;
+            transition: all 0.15s;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            gap: 4px;
         }
         .btn-calendar-outline:hover {
-            border-color: #007cba;
-            background: #f8f9fa;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: var(--primary);
+            background: var(--gray-50);
         }
-        .footer { 
-            margin-top: 3rem; 
-            padding-top: 2rem; 
-            border-top: 1px solid #e0e0e0; 
-            text-align: center; 
-            font-size: 0.9em; 
-            color: #666;
+        .btn-clicked {
+            background: var(--success) !important;
+            color: white !important;
+            border-color: var(--success) !important;
         }
-        pre { 
-            white-space: pre-wrap; 
-            word-wrap: break-word;
+
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--gray-400);
         }
-        @media (max-width: 768px) {
-            .form-grid { 
-                grid-template-columns: 1fr;
-            }
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
+        .footer p { margin: 0.25rem 0; }
+
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+
+        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: rgba(0, 0, 0, 0.5);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
             padding: 1rem;
         }
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
         .modal {
             background: #fff;
-            border-radius: 12px;
+            border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 720px;
-            max-height: 80vh;
+            max-width: 520px;
+            max-height: 85vh;
             overflow: auto;
-            padding: 1.5rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 1.25rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         }
         .modal-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
         }
         .modal-close {
             background: transparent;
             border: none;
-            font-size: 22px;
+            font-size: 20px;
             cursor: pointer;
+            color: var(--gray-400);
+            padding: 0;
             line-height: 1;
+        }
+        .modal-close:hover { color: var(--gray-600); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .setup-grid {
+                grid-template-columns: 1fr;
+            }
+            .setup-grid .calendar-col {
+                padding-left: 0;
+                padding-top: 1rem;
+                border-left: none;
+                border-top: 1px solid var(--gray-200);
+            }
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            .filter-row.triple {
+                grid-template-columns: 1fr;
+            }
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🌊 TideCal</h1>
-        <h2>Low Tide Calendar Generator</h2>
+        <h1>🌊 TideCal US</h1>
+        <h2>Tide Calendar Generator for the United States</h2>
     </div>
 
     <?php if ($result_message): ?>
@@ -862,32 +1080,32 @@ function buildSuccessMessage($stats, $config) {
             </div>
             
             <?php if ($calendar_url): ?>
-            <div class="subscription-url" style="margin: 1rem 0;">
-                <h3>📅 Calendar Subscription</h3>
-                <p>Choose how you'd like to add this calendar:</p>
-                
-                <div class="calendar-buttons" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
+            <div class="subscription-url">
+                <h3>📅 Subscribe to Calendar</h3>
+                <p>Choose how to add this calendar:</p>
+
+                <div class="calendar-buttons">
                     <button class="btn-calendar-outline" onclick="copyToClipboard('<?php echo htmlspecialchars($calendar_url); ?>')">
-                        📋<br><small>Copy</small>
+                        📋<br><small>Copy URL</small>
                     </button>
                     <button class="btn-calendar-outline" onclick="addToAppleCalendar('<?php echo htmlspecialchars($calendar_url); ?>')">
                         🍎<br><small>Apple</small>
                     </button>
                     <button class="btn-calendar-outline" onclick="downloadCalendar('<?php echo htmlspecialchars($calendar_url); ?>')">
-                        💾<br><small>Save</small>
+                        💾<br><small>Download</small>
                     </button>
                 </div>
-                
+
                 <div class="url-box">
                     <?php echo htmlspecialchars($calendar_url); ?>
                     <button class="copy-btn" onclick="copyToClipboard('<?php echo htmlspecialchars($calendar_url); ?>')">Copy</button>
                 </div>
             </div>
             <?php endif; ?>
-            
-            <div style="text-align: center; margin-top: 1rem;">
+
+            <div class="button-section" style="margin-top: 1rem;">
                 <button class="btn secondary" type="button" onclick="closeResultModal()">Close</button>
-                <a href="calendars.php" class="btn secondary">📅 View All Calendars</a>
+                <a href="calendars.php" class="btn secondary">📅 All Calendars</a>
             </div>
         </div>
     </div>
@@ -895,270 +1113,227 @@ function buildSuccessMessage($stats, $config) {
 
     <form method="POST">
         <input type="hidden" name="action" value="generate">
-        
-        <div class="top-grid">
-            <div class="form-section">
-                <div class="section-header">
-                    <h3>📍 Station</h3>
-                    <p class="section-subtitle">Search and confirm station details.</p>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group full-width">
+
+        <!-- Station & Settings -->
+        <div class="form-section">
+            <div class="setup-grid">
+                <div class="station-col">
+                    <div class="form-group full-row">
                         <label for="station_search">Search Stations</label>
-                        <input type="text" id="station_search" placeholder="Type station name or location..." 
+                        <input type="text" id="station_search" placeholder="Type station name or location..."
                                autocomplete="off" onkeyup="searchStations(this.value)">
                         <div id="search_results" class="search-results"></div>
-                        <small>Search by name, city, or state (e.g., "San Francisco", "Boston", "FL")</small>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="station_id">NOAA Station ID</label>
-                        <input type="text" id="station_id" name="station_id" 
-                               value="<?php echo htmlspecialchars($form_data['station_id']); ?>" 
+                        <label for="station_id">Station ID</label>
+                        <input type="text" id="station_id" name="station_id"
+                               value="<?php echo htmlspecialchars($form_data['station_id']); ?>"
                                pattern="[0-9]{7,8}" required readonly>
-                        <small>Auto-populated from station search</small>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="station_name">Station Name</label>
-                        <input type="text" id="station_name" name="station_name" 
+                        <label for="station_name">Name</label>
+                        <input type="text" id="station_name" name="station_name"
                                value="<?php echo htmlspecialchars($form_data['station_name']); ?>" readonly class="grayed-out">
-                        <small>Auto-populated from station search</small>
                     </div>
-                    
-                    <div class="form-group full-width">
+
+                    <div class="form-group">
                         <label for="timezone">Timezone</label>
-                        <select id="timezone" name="timezone" class="select-compact" required>
+                        <select id="timezone" name="timezone" required>
                             <?php
                             $common_timezones = [
-                                'America/New_York' => 'Eastern Time',
-                                'America/Chicago' => 'Central Time', 
-                                'America/Denver' => 'Mountain Time',
-                                'America/Los_Angeles' => 'Pacific Time',
-                                'America/Anchorage' => 'Alaska Time',
-                                'Pacific/Honolulu' => 'Hawaii Time',
+                                'America/New_York' => 'Eastern',
+                                'America/Chicago' => 'Central',
+                                'America/Denver' => 'Mountain',
+                                'America/Los_Angeles' => 'Pacific',
+                                'America/Anchorage' => 'Alaska',
+                                'Pacific/Honolulu' => 'Hawaii',
                                 'UTC' => 'UTC'
                             ];
-                            
+
                             foreach ($common_timezones as $tz_id => $tz_name) {
                                 $selected = ($tz_id === $form_data['timezone']) ? 'selected' : '';
-                                echo "<option value=\"" . htmlspecialchars($tz_id) . "\" {$selected}>" . htmlspecialchars($tz_name) . " (" . htmlspecialchars($tz_id) . ")</option>";
+                                echo "<option value=\"" . htmlspecialchars($tz_id) . "\" {$selected}>" . htmlspecialchars($tz_name) . "</option>";
                             }
-                            
-                            // Add current timezone if not in common list
+
                             if (!isset($common_timezones[$form_data['timezone']])) {
                                 echo "<option value=\"" . htmlspecialchars($form_data['timezone']) . "\" selected>" . htmlspecialchars($form_data['timezone']) . "</option>";
                             }
                             ?>
                         </select>
-                        <small>Auto-populated from station location, can be overridden</small>
                     </div>
-                    
-                    <!-- Hidden fields for lat/lon (auto-populated) -->
+
                     <input type="hidden" id="lat" name="lat" value="<?php echo htmlspecialchars($form_data['lat']); ?>">
                     <input type="hidden" id="lon" name="lon" value="<?php echo htmlspecialchars($form_data['lon']); ?>">
                 </div>
-            </div>
 
-            <div class="form-section">
-                <div class="section-header">
-                    <h3>🗓️ Calendar Settings</h3>
-                    <p class="section-subtitle">Year and display units.</p>
-                </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="year">Year</label>
-                        <input class="input-compact" type="number" id="year" name="year" 
-                               value="<?php echo htmlspecialchars($form_data['year']); ?>" 
-                               min="2000" max="2050" required>
-                        <small>Year to generate calendar for</small>
+                <div class="settings-col">
+                    <h4>Calendar Settings</h4>
+                    <div class="settings-row">
+                        <div class="inline-field">
+                            <label for="year">Year</label>
+                            <input type="number" id="year" name="year"
+                                   value="<?php echo htmlspecialchars($form_data['year']); ?>"
+                                   min="2000" max="2050" required>
+                        </div>
+                        <div class="inline-field">
+                            <label for="unit">Unit</label>
+                            <select id="unit" name="unit" required>
+                                <option value="ft" <?php echo ($form_data['unit'] === 'ft') ? 'selected' : ''; ?>>Feet</option>
+                                <option value="m" <?php echo ($form_data['unit'] === 'm') ? 'selected' : ''; ?>>Meters</option>
+                            </select>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="unit">Display Unit</label>
-                        <select id="unit" name="unit" class="input-compact" required>
-                            <option value="ft" <?php echo ($form_data['unit'] === 'ft') ? 'selected' : ''; ?>>Feet</option>
-                            <option value="m" <?php echo ($form_data['unit'] === 'm') ? 'selected' : ''; ?>>Meters</option>
-                        </select>
-                        <small>Unit for tide height display</small>
+
+                    <div class="sun-section">
+                        <p class="sun-title">☀️ Sun Events</p>
+                        <div class="sun-row">
+                            <label class="sun-check">
+                                <input type="checkbox" id="include_sunrise_events" name="include_sunrise_events" <?php echo $form_data['include_sunrise_events'] ? 'checked' : ''; ?>>
+                                Sunrise
+                            </label>
+                            <label class="sun-check">
+                                <input type="checkbox" id="include_sunset_events" name="include_sunset_events" <?php echo $form_data['include_sunset_events'] ? 'checked' : ''; ?>>
+                                Sunset
+                            </label>
+                        </div>
+                        <div class="sun-select-row">
+                            <label for="sun_events_match_tide_days">When:</label>
+                            <select id="sun_events_match_tide_days" name="sun_events_match_tide_days">
+                                <option value="1" <?php echo $form_data['sun_events_match_tide_days'] ? 'selected' : ''; ?>>Tide days only</option>
+                                <option value="0" <?php echo !$form_data['sun_events_match_tide_days'] ? 'selected' : ''; ?>>Every day</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Tide Filters -->
         <div class="form-section">
             <div class="section-header">
                 <h3>🌊 Tide Filters</h3>
-                <p class="section-subtitle">Choose which tide types to include and how to filter them.</p>
+                <span class="section-subtitle">Choose tide types and filtering criteria</span>
             </div>
             <div class="filters-grid">
+                <!-- Low Tides -->
                 <div class="filter-card" data-toggle="include_low_tides">
                     <div class="filter-card-header">
                         <div>
-                            <p class="filter-card-title">Low tides</p>
-                            <p class="filter-card-sub">Applies filters below to low tides</p>
+                            <p class="filter-card-title">Low Tides</p>
                         </div>
                         <div class="toggle">
-                            <span>Include</span>
                             <label class="switch" for="include_low_tides">
                                 <input type="checkbox" id="include_low_tides" name="include_low_tides" <?php echo $form_data['include_low_tides'] ? 'checked' : ''; ?>>
                                 <span class="slider"></span>
                             </label>
                         </div>
                     </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Height filter</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <label for="min_low_tide_value">Max height</label>
-                                <input class="input-compact" type="number" id="min_low_tide_value" name="min_low_tide_value" 
+
+                    <div class="filter-content">
+                        <div class="filter-row">
+                            <div class="field-group">
+                                <div class="field-label">Max Height</div>
+                                <input type="number" id="min_low_tide_value" name="min_low_tide_value"
                                        step="0.1" value="<?php echo $form_data['min_low_tide_value']; ?>">
-                                <small>Include lows ≤ this value (e.g., -0.5)</small>
+                                <small>Include lows ≤ this</small>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Sunlight window</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <label for="low_time_filter">Time filter</label>
+                            <div class="field-group">
+                                <div class="field-label">Daylight Filter</div>
                                 <select id="low_time_filter" name="low_time_filter">
                                     <option value="none" <?php echo ($form_data['low_time_filter'] === 'none') ? 'selected' : ''; ?>>None</option>
                                     <option value="after_sunrise" <?php echo ($form_data['low_time_filter'] === 'after_sunrise') ? 'selected' : ''; ?>>After sunrise</option>
                                     <option value="before_sunset" <?php echo ($form_data['low_time_filter'] === 'before_sunset') ? 'selected' : ''; ?>>Before sunset</option>
-                                    <option value="between" <?php echo ($form_data['low_time_filter'] === 'between') ? 'selected' : ''; ?>>Between sunrise and sunset</option>
+                                    <option value="between" <?php echo ($form_data['low_time_filter'] === 'between') ? 'selected' : ''; ?>>Daylight only</option>
                                 </select>
-                                <small>Uses margins below when applicable</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="low_minutes_after_sunrise">Minutes after sunrise</label>
-                                <input class="input-compact" type="number" id="low_minutes_after_sunrise" name="low_minutes_after_sunrise" 
-                                       value="<?php echo $form_data['low_minutes_after_sunrise']; ?>" 
-                                       min="0" max="1440">
-                                <small>Used for After sunrise / Between</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="low_minutes_before_sunset">Minutes before sunset</label>
-                                <input class="input-compact" type="number" id="low_minutes_before_sunset" name="low_minutes_before_sunset" 
-                                       value="<?php echo $form_data['low_minutes_before_sunset']; ?>" 
-                                       min="0" max="1440">
-                                <small>Used for Before sunset / Between</small>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Clock-time window</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="low_earliest_time_enabled" name="low_earliest_time_enabled" <?php echo $form_data['low_earliest_time_enabled'] ? 'checked' : ''; ?>>
-                                    <label for="low_earliest_time_enabled">Earliest time</label>
-                                </div>
-                                <div class="time-row">
-                                    <input class="input-time" type="time" id="low_earliest_time" name="low_earliest_time" value="<?php echo htmlspecialchars($form_data['low_earliest_time']); ?>">
-                                    <span class="section-subtitle">local</span>
-                                </div>
-                                <small>Exclude lows before this time (local)</small>
+
+                        <div class="filter-row">
+                            <div class="field-group">
+                                <div class="field-label">Min After Sunrise</div>
+                                <input type="number" id="low_minutes_after_sunrise" name="low_minutes_after_sunrise"
+                                       value="<?php echo $form_data['low_minutes_after_sunrise']; ?>" min="0" max="1440">
                             </div>
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="low_latest_time_enabled" name="low_latest_time_enabled" <?php echo $form_data['low_latest_time_enabled'] ? 'checked' : ''; ?>>
-                                    <label for="low_latest_time_enabled">Latest time</label>
-                                </div>
-                                <div class="time-row">
-                                    <input class="input-time" type="time" id="low_latest_time" name="low_latest_time" value="<?php echo htmlspecialchars($form_data['low_latest_time']); ?>">
-                                    <span class="section-subtitle">local</span>
-                                </div>
-                                <small>Exclude lows after this time (local)</small>
+                            <div class="field-group">
+                                <div class="field-label">Min Before Sunset</div>
+                                <input type="number" id="low_minutes_before_sunset" name="low_minutes_before_sunset"
+                                       value="<?php echo $form_data['low_minutes_before_sunset']; ?>" min="0" max="1440">
+                            </div>
+                        </div>
+
+                        <div class="time-row">
+                            <div class="time-window-row">
+                                <input type="checkbox" id="low_earliest_time_enabled" name="low_earliest_time_enabled" <?php echo $form_data['low_earliest_time_enabled'] ? 'checked' : ''; ?>>
+                                <label for="low_earliest_time_enabled">After</label>
+                                <input type="time" id="low_earliest_time" name="low_earliest_time" value="<?php echo htmlspecialchars($form_data['low_earliest_time']); ?>">
+                            </div>
+                            <div class="time-window-row">
+                                <input type="checkbox" id="low_latest_time_enabled" name="low_latest_time_enabled" <?php echo $form_data['low_latest_time_enabled'] ? 'checked' : ''; ?>>
+                                <label for="low_latest_time_enabled">Before</label>
+                                <input type="time" id="low_latest_time" name="low_latest_time" value="<?php echo htmlspecialchars($form_data['low_latest_time']); ?>">
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- High Tides -->
                 <div class="filter-card" data-toggle="include_high_tides">
                     <div class="filter-card-header">
                         <div>
-                            <p class="filter-card-title">High tides</p>
-                            <p class="filter-card-sub">Applies filters below to high tides</p>
+                            <p class="filter-card-title">High Tides</p>
                         </div>
                         <div class="toggle">
-                            <span>Include</span>
                             <label class="switch" for="include_high_tides">
                                 <input type="checkbox" id="include_high_tides" name="include_high_tides" <?php echo $form_data['include_high_tides'] ? 'checked' : ''; ?>>
                                 <span class="slider"></span>
                             </label>
                         </div>
                     </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Height filter</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <label for="high_tide_min_value">Min height</label>
-                                <input class="input-compact" type="number" id="high_tide_min_value" name="high_tide_min_value" 
+
+                    <div class="filter-content">
+                        <div class="filter-row">
+                            <div class="field-group">
+                                <div class="field-label">Min Height</div>
+                                <input type="number" id="high_tide_min_value" name="high_tide_min_value"
                                        step="0.1" value="<?php echo $form_data['high_tide_min_value']; ?>">
-                                <small>Include highs ≥ this value</small>
+                                <small>Include highs ≥ this</small>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Sunlight window</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <label for="high_time_filter">Time filter</label>
+                            <div class="field-group">
+                                <div class="field-label">Daylight Filter</div>
                                 <select id="high_time_filter" name="high_time_filter">
                                     <option value="none" <?php echo ($form_data['high_time_filter'] === 'none') ? 'selected' : ''; ?>>None</option>
                                     <option value="after_sunrise" <?php echo ($form_data['high_time_filter'] === 'after_sunrise') ? 'selected' : ''; ?>>After sunrise</option>
                                     <option value="before_sunset" <?php echo ($form_data['high_time_filter'] === 'before_sunset') ? 'selected' : ''; ?>>Before sunset</option>
-                                    <option value="between" <?php echo ($form_data['high_time_filter'] === 'between') ? 'selected' : ''; ?>>Between sunrise and sunset</option>
+                                    <option value="between" <?php echo ($form_data['high_time_filter'] === 'between') ? 'selected' : ''; ?>>Daylight only</option>
                                 </select>
-                                <small>Uses margins below when applicable</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="high_minutes_after_sunrise">Minutes after sunrise</label>
-                                <input class="input-compact" type="number" id="high_minutes_after_sunrise" name="high_minutes_after_sunrise" 
-                                       value="<?php echo $form_data['high_minutes_after_sunrise']; ?>" 
-                                       min="0" max="1440">
-                                <small>Used for After sunrise / Between</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="high_minutes_before_sunset">Minutes before sunset</label>
-                                <input class="input-compact" type="number" id="high_minutes_before_sunset" name="high_minutes_before_sunset" 
-                                       value="<?php echo $form_data['high_minutes_before_sunset']; ?>" 
-                                       min="0" max="1440">
-                                <small>Used for Before sunset / Between</small>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Clock-time window</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="high_earliest_time_enabled" name="high_earliest_time_enabled" <?php echo $form_data['high_earliest_time_enabled'] ? 'checked' : ''; ?>>
-                                    <label for="high_earliest_time_enabled">Earliest time</label>
-                                </div>
-                                <div class="time-row">
-                                    <input class="input-time" type="time" id="high_earliest_time" name="high_earliest_time" value="<?php echo htmlspecialchars($form_data['high_earliest_time']); ?>">
-                                    <span class="section-subtitle">local</span>
-                                </div>
-                                <small>Exclude highs before this time (local)</small>
+
+                        <div class="filter-row">
+                            <div class="field-group">
+                                <div class="field-label">Min After Sunrise</div>
+                                <input type="number" id="high_minutes_after_sunrise" name="high_minutes_after_sunrise"
+                                       value="<?php echo $form_data['high_minutes_after_sunrise']; ?>" min="0" max="1440">
                             </div>
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="high_latest_time_enabled" name="high_latest_time_enabled" <?php echo $form_data['high_latest_time_enabled'] ? 'checked' : ''; ?>>
-                                    <label for="high_latest_time_enabled">Latest time</label>
-                                </div>
-                                <div class="time-row">
-                                    <input class="input-time" type="time" id="high_latest_time" name="high_latest_time" value="<?php echo htmlspecialchars($form_data['high_latest_time']); ?>">
-                                    <span class="section-subtitle">local</span>
-                                </div>
-                                <small>Exclude highs after this time (local)</small>
+                            <div class="field-group">
+                                <div class="field-label">Min Before Sunset</div>
+                                <input type="number" id="high_minutes_before_sunset" name="high_minutes_before_sunset"
+                                       value="<?php echo $form_data['high_minutes_before_sunset']; ?>" min="0" max="1440">
+                            </div>
+                        </div>
+
+                        <div class="time-row">
+                            <div class="time-window-row">
+                                <input type="checkbox" id="high_earliest_time_enabled" name="high_earliest_time_enabled" <?php echo $form_data['high_earliest_time_enabled'] ? 'checked' : ''; ?>>
+                                <label for="high_earliest_time_enabled">After</label>
+                                <input type="time" id="high_earliest_time" name="high_earliest_time" value="<?php echo htmlspecialchars($form_data['high_earliest_time']); ?>">
+                            </div>
+                            <div class="time-window-row">
+                                <input type="checkbox" id="high_latest_time_enabled" name="high_latest_time_enabled" <?php echo $form_data['high_latest_time_enabled'] ? 'checked' : ''; ?>>
+                                <label for="high_latest_time_enabled">Before</label>
+                                <input type="time" id="high_latest_time" name="high_latest_time" value="<?php echo htmlspecialchars($form_data['high_latest_time']); ?>">
                             </div>
                         </div>
                     </div>
@@ -1166,58 +1341,11 @@ function buildSuccessMessage($stats, $config) {
             </div>
         </div>
 
-        <div class="form-section">
-            <div class="section-header">
-                <h3>☀️ Sunrise / Sunset Events</h3>
-                <p class="section-subtitle">Optional sun events to add alongside tides.</p>
-            </div>
-            <div class="filters-grid">
-                <div class="filter-card">
-                    <div class="section-block">
-                        <div class="section-title">Include events</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="include_sunrise_events" name="include_sunrise_events" <?php echo $form_data['include_sunrise_events'] ? 'checked' : ''; ?>>
-                                    <label for="include_sunrise_events">Sunrise</label>
-                                </div>
-                                <small>Add a sunrise event</small>
-                            </div>
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="include_sunset_events" name="include_sunset_events" <?php echo $form_data['include_sunset_events'] ? 'checked' : ''; ?>>
-                                    <label for="include_sunset_events">Sunset</label>
-                                </div>
-                                <small>Add a sunset event</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">Scope</div>
-                        <div class="section-grid">
-                            <div class="form-group">
-                                <div class="inline-check">
-                                    <input type="checkbox" id="sun_events_match_tide_days" name="sun_events_match_tide_days" <?php echo $form_data['sun_events_match_tide_days'] ? 'checked' : ''; ?>>
-                                    <label for="sun_events_match_tide_days">Only on days with qualifying tides</label>
-                                </div>
-                                <small>If unchecked, sunrise/sunset events are added for every day of the year</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="button-section">
+            <button type="submit" class="btn">✨ Generate Calendar</button>
+            <a href="calendars.php" class="btn secondary">📅 View Calendars</a>
         </div>
-
-        <div class="button-section" style="display: flex !important; justify-content: center !important; align-items: center !important; gap: 1rem !important; flex-wrap: wrap !important; margin: 1.5rem 0 !important;">
-            <button type="submit" class="btn">
-                ✨ Generate Calendar
-            </button>
-            <a href="calendars.php" class="btn secondary">📅 View Existing Calendars</a>
-        </div>
-        <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 0;">
-            Creates a unique calendar based on your filter settings
-        </p>
+        <p>Creates a unique calendar based on your filter settings</p>
     </form>
 
     <div class="footer">
