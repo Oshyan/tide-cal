@@ -388,14 +388,48 @@ class Util {
     
     /**
      * Count events in an ICS file (rough estimate)
-     * 
+     *
      * @param string $ics_content
      * @return int
      */
     public static function countIcsEvents($ics_content) {
         return substr_count($ics_content, 'BEGIN:VEVENT');
     }
-    
+
+    /**
+     * Count events by type in an ICS file
+     *
+     * @param string $ics_content
+     * @return array ['low' => int, 'high' => int, 'sunrise' => int, 'sunset' => int, 'total' => int]
+     */
+    public static function countIcsEventsByType($ics_content) {
+        $counts = [
+            'low' => 0,
+            'high' => 0,
+            'sunrise' => 0,
+            'sunset' => 0,
+            'total' => 0
+        ];
+
+        // Match SUMMARY lines
+        if (preg_match_all('/SUMMARY:([^\r\n]+)/', $ics_content, $matches)) {
+            foreach ($matches[1] as $summary) {
+                $counts['total']++;
+                if (strpos($summary, 'Low Tide') === 0) {
+                    $counts['low']++;
+                } elseif (strpos($summary, 'High Tide') === 0) {
+                    $counts['high']++;
+                } elseif ($summary === 'Sunrise') {
+                    $counts['sunrise']++;
+                } elseif ($summary === 'Sunset') {
+                    $counts['sunset']++;
+                }
+            }
+        }
+
+        return $counts;
+    }
+
     /**
      * Measure execution time of a callable
      * 

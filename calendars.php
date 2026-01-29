@@ -63,406 +63,255 @@ uasort($all_calendars, function($a, $b) {
             --warning: #d97706;
             --warning-bg: #fef3c7;
             --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
+            --radius-md: 6px;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 900px;
-            margin: 1.5rem auto;
+            max-width: 960px;
+            margin: 1rem auto;
             padding: 0 1rem;
-            line-height: 1.5;
+            line-height: 1.4;
             color: var(--gray-800);
             background: var(--gray-50);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--gray-200);
         }
-        .header h1 {
-            margin: 0 0 0.25rem;
-            font-size: 1.75rem;
-        }
-        .header p {
-            margin: 0;
-            font-size: 1rem;
-            color: var(--gray-500);
-        }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+        .header p { margin: 0.25rem 0 0; font-size: 0.9rem; color: var(--gray-500); }
 
-        .nav {
-            margin-bottom: 1.25rem;
-            text-align: center;
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .btn {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 6px 12px;
+            font-size: 12px;
             font-weight: 500;
             border-radius: var(--radius-md);
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            transition: background-color 0.15s, transform 0.1s;
+            gap: 4px;
         }
         .btn:hover { background: var(--primary-dark); }
-        .btn:active { transform: scale(0.98); }
         .btn.secondary { background: var(--gray-500); }
         .btn.secondary:hover { background: var(--gray-600); }
         .btn.danger { background: var(--error); }
         .btn.danger:hover { background: #b91c1c; }
-        .btn.small { padding: 5px 10px; font-size: 11px; }
-        .btn-clicked { background: var(--success) !important; }
 
         .message {
-            margin: 0 0 1rem;
-            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 0.75rem;
             border-radius: var(--radius-md);
-            font-size: 0.9rem;
-        }
-        .message.success {
-            background: var(--success-bg);
-            border: 1px solid #a7f3d0;
-            color: #065f46;
-        }
-        .message.error {
-            background: var(--error-bg);
-            border: 1px solid #fecaca;
-            color: #991b1b;
-        }
-
-        .stats-bar {
-            background: white;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-lg);
-            margin-bottom: 1rem;
-            border: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        .stats-bar .stat {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-        .stats-bar .stat strong {
-            font-size: 1.25rem;
-            color: var(--primary);
-        }
-
-        .maintenance-bar {
-            background: var(--warning-bg);
-            padding: 0.625rem 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1rem;
-            border: 1px solid #fcd34d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .maintenance-bar .label {
             font-size: 0.85rem;
-            color: #92400e;
-            font-weight: 500;
         }
-        .maintenance-bar .form-inline {
+        .message.success { background: var(--success-bg); color: #065f46; }
+        .message.error { background: var(--error-bg); color: #991b1b; }
+
+        .stats { font-size: 0.85rem; color: var(--gray-600); }
+        .stats strong { color: var(--primary); font-size: 1.1rem; }
+
+        .maintenance {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--warning);
         }
-        .maintenance-bar input[type="number"] {
-            width: 60px;
-            padding: 4px 8px;
+        .maintenance input {
+            width: 50px;
+            padding: 3px 6px;
             border: 1px solid var(--gray-300);
             border-radius: var(--radius-sm);
-            font-size: 13px;
-        }
-        .maintenance-bar span {
-            font-size: 0.8rem;
-            color: #92400e;
+            font-size: 12px;
         }
 
-        .calendar-grid {
-            display: grid;
-            gap: 0.75rem;
-        }
+        .calendar-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
-        .calendar-card {
+        .calendar-row {
             background: white;
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 0.875rem 1rem;
-            display: grid;
-            grid-template-columns: 1fr auto;
+            border-radius: var(--radius-md);
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
             gap: 0.75rem;
+            font-size: 0.8rem;
         }
-        .calendar-card:hover {
-            border-color: var(--gray-300);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
+        .calendar-row:hover { border-color: var(--gray-300); }
 
-        .card-main {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 0.75rem 1rem;
-            align-items: start;
+        .cal-station {
+            min-width: 120px;
+            max-width: 140px;
         }
-
-        .card-station {
-            border-right: 1px solid var(--gray-200);
-            padding-right: 0.75rem;
-        }
-        .card-station .name {
+        .cal-station .name {
             font-weight: 600;
-            font-size: 0.95rem;
-            color: var(--gray-800);
-            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .card-station .id {
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: var(--gray-500);
-        }
-        .card-station .calendar-id {
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid var(--gray-100);
-        }
-        .card-station .calendar-id code {
+        .cal-station .ids {
             font-size: 0.7rem;
             color: var(--gray-400);
-            background: var(--gray-50);
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-        .card-station .file-warning {
-            color: var(--error);
-            font-size: 0.7rem;
-            margin-top: 0.25rem;
+            font-family: monospace;
         }
 
-        .card-params {
+        .cal-params {
+            flex: 1;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.375rem 0.75rem;
-            font-size: 0.8rem;
+            gap: 0.25rem 0.5rem;
             color: var(--gray-600);
-        }
-        .card-params .param {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        .card-params .param-label {
-            color: var(--gray-400);
-        }
-        .card-params .param-value {
-            font-weight: 500;
-        }
-        .card-params .divider {
-            color: var(--gray-300);
-        }
-
-        .card-dates {
-            display: flex;
-            gap: 1rem;
             font-size: 0.75rem;
-            color: var(--gray-500);
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid var(--gray-100);
+        }
+        .cal-params span { white-space: nowrap; }
+        .cal-params .label { color: var(--gray-400); }
+        .cal-params .sep { color: var(--gray-300); }
+
+        .cal-dates {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            text-align: right;
+            min-width: 100px;
         }
 
-        .card-actions {
+        .cal-actions {
             display: flex;
-            flex-direction: column;
-            gap: 0.375rem;
-            align-items: flex-end;
+            gap: 3px;
         }
-
-        .subscribe-buttons {
-            display: flex;
-            gap: 4px;
-        }
-        .btn-icon {
+        .btn-sm {
             background: white;
-            color: var(--gray-600);
+            color: var(--gray-500);
             border: 1px solid var(--gray-200);
-            padding: 6px 8px;
+            padding: 4px 6px;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 12px;
-            transition: all 0.15s;
+            font-size: 11px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
         }
-        .btn-icon:hover {
+        .btn-sm:hover {
             border-color: var(--primary);
             color: var(--primary);
-            background: var(--gray-50);
         }
-        .btn-icon.clicked {
+        .btn-sm.danger:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+        .btn-sm.clicked {
             background: var(--success-bg);
             border-color: var(--success);
             color: var(--success);
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 4px;
-        }
-
         .empty-state {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 2rem;
             background: white;
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
         }
-        .empty-state h2 {
-            margin: 0 0 0.5rem;
-            color: var(--gray-600);
-        }
-        .empty-state p {
-            color: var(--gray-500);
-            margin: 0 0 1rem;
-        }
+        .empty-state p { color: var(--gray-500); margin: 0.5rem 0 1rem; }
 
         .footer {
-            margin-top: 2rem;
-            padding-top: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 0.75rem;
             border-top: 1px solid var(--gray-200);
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-400);
         }
 
-        /* Log modal */
-        .log-modal {
+        /* Modal */
+        .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(0,0,0,0.5);
             z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        .log-modal.active {
-            display: flex;
-        }
-        .log-modal-content {
+        .modal.active { display: flex; }
+        .modal-box {
             background: white;
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             width: 90%;
-            max-width: 700px;
-            max-height: 80vh;
+            max-width: 600px;
+            max-height: 70vh;
             display: flex;
             flex-direction: column;
         }
-        .log-modal-header {
-            padding: 0.875rem 1rem;
+        .modal-header {
+            padding: 0.625rem 0.875rem;
             border-bottom: 1px solid var(--gray-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .log-modal-header h3 {
-            margin: 0;
-            font-size: 1rem;
-        }
-        .log-modal-header .close-btn {
+        .modal-header h3 { margin: 0; font-size: 0.95rem; }
+        .modal-close {
             background: none;
             border: none;
             font-size: 1.25rem;
             cursor: pointer;
             color: var(--gray-400);
-            padding: 0;
             line-height: 1;
         }
-        .log-modal-header .close-btn:hover {
-            color: var(--gray-600);
-        }
-        .log-modal-body {
-            padding: 1rem;
+        .modal-close:hover { color: var(--gray-600); }
+        .modal-body {
+            padding: 0.75rem;
             overflow-y: auto;
-            flex: 1;
         }
         .log-content {
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 0.75rem;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.7rem;
             line-height: 1.5;
             background: var(--gray-50);
-            padding: 0.75rem;
+            padding: 0.5rem;
             border-radius: var(--radius-sm);
             white-space: pre-wrap;
             word-break: break-all;
-            color: var(--gray-700);
-            min-height: 100px;
         }
 
-        /* Toast */
         .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 16px;
+            right: 16px;
             background: var(--success);
             color: white;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: var(--radius-md);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 0.8rem;
             z-index: 1001;
-            font-size: 0.85rem;
-            max-width: 320px;
-            animation: slideIn 0.3s ease-out;
+            animation: slideIn 0.2s ease-out;
         }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } }
+        @keyframes slideOut { to { transform: translateX(100%); opacity: 0; } }
 
-        @media (max-width: 640px) {
-            .calendar-card {
-                grid-template-columns: 1fr;
-            }
-            .card-main {
-                grid-template-columns: 1fr;
-            }
-            .card-station {
-                border-right: none;
-                border-bottom: 1px solid var(--gray-200);
-                padding-right: 0;
-                padding-bottom: 0.75rem;
-            }
-            .card-actions {
-                flex-direction: row;
-                justify-content: flex-end;
-            }
-            .stats-bar {
-                flex-direction: column;
-                text-align: center;
-            }
+        @media (max-width: 700px) {
+            .calendar-row { flex-wrap: wrap; }
+            .cal-station { min-width: 100%; }
+            .cal-dates { min-width: auto; text-align: left; }
         }
     </style>
 </head>
@@ -472,306 +321,221 @@ uasort($all_calendars, function($a, $b) {
         <p>All Generated Calendars</p>
     </div>
 
-    <div class="nav">
-        <a href="index.php" class="btn secondary">&larr; Back to Generator</a>
-    </div>
-
     <?php if ($message): ?>
     <div class="message <?php echo htmlspecialchars($message_type); ?>">
         <?php echo htmlspecialchars($message); ?>
     </div>
     <?php endif; ?>
 
-    <div class="stats-bar">
-        <div class="stat">
-            <strong><?php echo count($all_calendars); ?></strong>
-            <span>calendars created</span>
+    <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="index.php" class="btn secondary">&larr; Back</a>
+            <span class="stats"><strong><?php echo count($all_calendars); ?></strong> calendars</span>
         </div>
+        <?php if (!empty($all_calendars)): ?>
+        <form method="POST" class="maintenance">
+            <input type="hidden" name="action" value="cleanup">
+            <span>Delete &gt;</span>
+            <input type="number" name="cleanup_days" value="365" min="1">
+            <span>days old</span>
+            <button type="submit" class="btn danger" onclick="return confirm('Delete old calendars?')">Clean</button>
+        </form>
+        <?php endif; ?>
     </div>
 
     <?php if (!empty($all_calendars)): ?>
-    <div class="maintenance-bar">
-        <span class="label">Maintenance</span>
-        <form method="POST" class="form-inline">
-            <input type="hidden" name="action" value="cleanup">
-            <span>Delete older than</span>
-            <input type="number" name="cleanup_days" value="365" min="1" max="9999">
-            <span>days</span>
-            <button type="submit" class="btn small danger" onclick="return confirm('Delete calendars older than this?')">
-                Clean Up
-            </button>
-        </form>
-    </div>
-
-    <div class="calendar-grid">
+    <div class="calendar-list">
         <?php foreach ($all_calendars as $calendar): ?>
         <?php
         $params = $calendar['params'];
         $calendar_url = $calendar_manager->getCalendarUrl($calendar['id'], $config['base_url']);
         $ics_file = $calendar_manager->getCalendarFilePath($calendar['id']);
         $file_exists = file_exists($ics_file);
-        $event_count = $file_exists ? Util::countIcsEvents(file_get_contents($ics_file)) : 0;
+        $ics_content = $file_exists ? file_get_contents($ics_file) : '';
+        $event_counts = $file_exists ? Util::countIcsEventsByType($ics_content) : ['low' => 0, 'high' => 0, 'sunrise' => 0, 'sunset' => 0, 'total' => 0];
+
+        // Build edit URL with params
+        $edit_params = [
+            'edit' => $calendar['id'],
+            'station_id' => $params['station_id'] ?? '',
+            'station_name' => $params['station_name'] ?? '',
+            'lat' => $params['lat'] ?? '',
+            'lon' => $params['lon'] ?? '',
+            'timezone' => $params['timezone'] ?? '',
+            'year' => $params['year'] ?? date('Y'),
+            'unit' => $params['unit'] ?? 'ft',
+        ];
+        // Add tide filter params
+        if (!empty($params['include_low_tides'])) {
+            $edit_params['include_low_tides'] = '1';
+            $edit_params['min_low_tide_value'] = $params['min_low_tide_value'] ?? 0;
+            $edit_params['low_time_filter'] = $params['low_time_filter'] ?? 'none';
+        }
+        if (!empty($params['include_high_tides'])) {
+            $edit_params['include_high_tides'] = '1';
+            $edit_params['high_tide_min_value'] = $params['high_tide_min_value'] ?? 0;
+            $edit_params['high_time_filter'] = $params['high_time_filter'] ?? 'none';
+        }
+        if (!empty($params['include_sunrise_events'])) $edit_params['include_sunrise_events'] = '1';
+        if (!empty($params['include_sunset_events'])) $edit_params['include_sunset_events'] = '1';
+        $edit_url = 'index.php?' . http_build_query($edit_params);
         ?>
-        <div class="calendar-card">
-            <div class="card-main">
-                <div class="card-station">
-                    <div class="name"><?php echo htmlspecialchars($params['station_name'] ?? 'Unknown'); ?></div>
-                    <div class="id"><?php echo htmlspecialchars($params['station_id'] ?? ''); ?></div>
-                    <div class="calendar-id">
-                        <code><?php echo htmlspecialchars($calendar['id']); ?></code>
-                    </div>
-                    <?php if (!$file_exists): ?>
-                    <div class="file-warning">File missing</div>
-                    <?php endif; ?>
+        <div class="calendar-row">
+            <div class="cal-station">
+                <div class="name" title="<?php echo htmlspecialchars($params['station_name'] ?? 'Unknown'); ?>">
+                    <?php echo htmlspecialchars($params['station_name'] ?? 'Unknown'); ?>
                 </div>
-                <div class="card-details">
-                    <div class="card-params">
-                        <span class="param">
-                            <span class="param-label">Year:</span>
-                            <span class="param-value"><?php echo htmlspecialchars($params['year'] ?? date('Y')); ?></span>
-                        </span>
-                        <span class="divider">|</span>
-                        <?php if (!empty($params['include_low_tides'])): ?>
-                        <span class="param">
-                            <span class="param-label">Low:</span>
-                            <span class="param-value">&le;<?php echo htmlspecialchars($params['min_low_tide_value'] ?? '0'); ?><?php echo htmlspecialchars($params['unit'] ?? 'ft'); ?></span>
-                        </span>
-                        <?php endif; ?>
-                        <?php if (!empty($params['include_high_tides'])): ?>
-                        <span class="param">
-                            <span class="param-label">High:</span>
-                            <span class="param-value">&ge;<?php echo htmlspecialchars($params['high_tide_min_value'] ?? '0'); ?><?php echo htmlspecialchars($params['unit'] ?? 'ft'); ?></span>
-                        </span>
-                        <?php endif; ?>
-                        <?php if ($event_count > 0): ?>
-                        <span class="divider">|</span>
-                        <span class="param">
-                            <span class="param-value"><?php echo $event_count; ?> events</span>
-                        </span>
-                        <?php endif; ?>
-                        <?php
-                        $sun_parts = [];
-                        if (!empty($params['include_sunrise_events'])) $sun_parts[] = 'sunrise';
-                        if (!empty($params['include_sunset_events'])) $sun_parts[] = 'sunset';
-                        if (!empty($sun_parts)): ?>
-                        <span class="divider">|</span>
-                        <span class="param">
-                            <span class="param-label">Sun:</span>
-                            <span class="param-value"><?php echo implode('+', $sun_parts); ?></span>
-                        </span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="card-dates">
-                        <span>Created: <?php echo htmlspecialchars(date('M j, Y g:ia', strtotime($calendar['created_at']))); ?></span>
-                        <span>Updated: <?php echo htmlspecialchars(date('M j, Y g:ia', strtotime($calendar['updated_at']))); ?></span>
-                    </div>
-                </div>
+                <div class="ids"><?php echo htmlspecialchars($params['station_id'] ?? ''); ?> / <?php echo htmlspecialchars($calendar['id']); ?></div>
             </div>
-            <div class="card-actions">
-                <div class="subscribe-buttons">
-                    <button class="btn-icon" onclick="copyToClipboard('<?php echo htmlspecialchars($calendar_url); ?>', this)" title="Copy URL">
-                        <span class="icon">📋</span> Copy
-                    </button>
-                    <button class="btn-icon" onclick="addToAppleCalendar('<?php echo htmlspecialchars($calendar_url); ?>')" title="Apple Calendar">
-                        <span class="icon">🍎</span>
-                    </button>
-                    <button class="btn-icon" onclick="downloadCalendar('<?php echo htmlspecialchars($calendar_url); ?>')" title="Download">
-                        <span class="icon">💾</span>
-                    </button>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="viewLog('<?php echo htmlspecialchars($calendar['id']); ?>')" title="View Log">
-                        <span class="icon">📋</span> Log
-                    </button>
-                    <form method="POST" style="display: inline; margin: 0;">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="calendar_id" value="<?php echo htmlspecialchars($calendar['id']); ?>">
-                        <button type="submit" class="btn-icon" style="color: var(--error);"
-                                onclick="return confirm('Delete this calendar?')" title="Delete">
-                            <span class="icon">🗑️</span>
-                        </button>
-                    </form>
-                </div>
+            <div class="cal-params">
+                <span><span class="label">Year:</span> <?php echo htmlspecialchars($params['year'] ?? date('Y')); ?></span>
+                <?php if (!empty($params['include_low_tides'])): ?>
+                <span class="sep">|</span>
+                <span><span class="label">Low:</span> &le;<?php echo htmlspecialchars($params['min_low_tide_value'] ?? '0'); ?><?php echo htmlspecialchars($params['unit'] ?? 'ft'); ?></span>
+                <?php endif; ?>
+                <?php if (!empty($params['include_high_tides'])): ?>
+                <span class="sep">|</span>
+                <span><span class="label">High:</span> &ge;<?php echo htmlspecialchars($params['high_tide_min_value'] ?? '0'); ?><?php echo htmlspecialchars($params['unit'] ?? 'ft'); ?></span>
+                <?php endif; ?>
+                <?php if ($event_counts['total'] > 0): ?>
+                <span class="sep">|</span>
+                <span title="<?php
+                    $parts = [];
+                    if ($event_counts['low'] > 0) $parts[] = $event_counts['low'] . ' low';
+                    if ($event_counts['high'] > 0) $parts[] = $event_counts['high'] . ' high';
+                    if ($event_counts['sunrise'] > 0) $parts[] = $event_counts['sunrise'] . ' sunrise';
+                    if ($event_counts['sunset'] > 0) $parts[] = $event_counts['sunset'] . ' sunset';
+                    echo htmlspecialchars(implode(', ', $parts));
+                ?>"><?php
+                    // Compact display: tides + sun
+                    $tide_count = $event_counts['low'] + $event_counts['high'];
+                    $sun_count = $event_counts['sunrise'] + $event_counts['sunset'];
+                    $display_parts = [];
+                    if ($tide_count > 0) $display_parts[] = $tide_count . 't';
+                    if ($sun_count > 0) $display_parts[] = $sun_count . 's';
+                    echo implode('+', $display_parts);
+                ?></span>
+                <?php endif; ?>
+                <?php if (!$file_exists): ?>
+                <span style="color: var(--error);">missing</span>
+                <?php endif; ?>
+            </div>
+            <div class="cal-dates">
+                <div class="local-time" data-utc="<?php echo htmlspecialchars($calendar['created_at']); ?>"></div>
+                <div class="local-time" data-utc="<?php echo htmlspecialchars($calendar['updated_at']); ?>" data-prefix="Upd: "></div>
+            </div>
+            <div class="cal-actions">
+                <button class="btn-sm" onclick="copyUrl('<?php echo htmlspecialchars($calendar_url); ?>', this)" title="Copy URL">📋</button>
+                <button class="btn-sm" onclick="appleCal('<?php echo htmlspecialchars($calendar_url); ?>')" title="Apple Calendar">🍎</button>
+                <a href="<?php echo htmlspecialchars($edit_url); ?>" class="btn-sm" title="Edit">✏️</a>
+                <button class="btn-sm" onclick="viewLog('<?php echo htmlspecialchars($calendar['id']); ?>')" title="View Log">📄</button>
+                <form method="POST" style="display:inline;margin:0;">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="calendar_id" value="<?php echo htmlspecialchars($calendar['id']); ?>">
+                    <button type="submit" class="btn-sm danger" onclick="return confirm('Delete?')" title="Delete">🗑️</button>
+                </form>
             </div>
         </div>
         <?php endforeach; ?>
     </div>
-
     <?php else: ?>
     <div class="empty-state">
         <h2>No Calendars Yet</h2>
-        <p>No calendars have been created yet.</p>
-        <a href="index.php" class="btn">Create Your First Calendar</a>
+        <p>Create your first calendar to get started.</p>
+        <a href="index.php" class="btn">Create Calendar</a>
     </div>
     <?php endif; ?>
 
-    <div class="footer">
-        <p>TideCal &middot; Data provided by NOAA Tides &amp; Currents</p>
-    </div>
+    <div class="footer">TideCal &middot; NOAA Tides &amp; Currents</div>
 
-    <!-- Log Modal -->
-    <div class="log-modal" id="log-modal">
-        <div class="log-modal-content">
-            <div class="log-modal-header">
+    <div class="modal" id="log-modal">
+        <div class="modal-box">
+            <div class="modal-header">
                 <h3>Generation Log</h3>
-                <button class="close-btn" onclick="closeLogModal()">&times;</button>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="log-modal-body">
+            <div class="modal-body">
                 <div class="log-content" id="log-content">Loading...</div>
             </div>
         </div>
     </div>
 
     <script>
-    function copyToClipboard(text, button) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function() {
-                if (button) {
-                    button.classList.add('clicked');
-                    const originalHTML = button.innerHTML;
-                    button.innerHTML = '<span class="icon">✅</span> Copied';
-                    setTimeout(() => {
-                        button.innerHTML = originalHTML;
-                        button.classList.remove('clicked');
-                    }, 2000);
-                }
-                showToast('URL copied! In Google Calendar: Settings > Add calendar > From URL');
-            }).catch(function(err) {
-                fallbackCopyTextToClipboard(text, button);
-            });
-        } else {
-            fallbackCopyTextToClipboard(text, button);
+    // Convert UTC times to local
+    document.querySelectorAll('.local-time').forEach(el => {
+        const utc = el.dataset.utc;
+        const prefix = el.dataset.prefix || '';
+        if (utc) {
+            const d = new Date(utc + 'Z'); // Append Z to treat as UTC
+            const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+            el.textContent = prefix + d.toLocaleDateString('en-US', opts);
         }
+    });
+
+    function copyUrl(url, btn) {
+        navigator.clipboard.writeText(url).then(() => {
+            btn.classList.add('clicked');
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('clicked'); }, 1500);
+            toast('URL copied');
+        }).catch(() => {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.cssText = 'position:fixed;opacity:0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.classList.add('clicked');
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '📋'; btn.classList.remove('clicked'); }, 1500);
+            toast('URL copied');
+        });
     }
 
-    function fallbackCopyTextToClipboard(text, button) {
-        var textArea = document.createElement("textarea");
-        textArea.value = text;
-        textArea.style.cssText = "position:fixed;top:0;left:0;opacity:0";
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-
-        try {
-            if (document.execCommand('copy')) {
-                if (button) {
-                    button.classList.add('clicked');
-                    const originalHTML = button.innerHTML;
-                    button.innerHTML = '<span class="icon">✅</span> Copied';
-                    setTimeout(() => {
-                        button.innerHTML = originalHTML;
-                        button.classList.remove('clicked');
-                    }, 2000);
-                }
-                showToast('URL copied! In Google Calendar: Settings > Add calendar > From URL');
-            }
-        } catch (err) {
-            console.error('Copy failed:', err);
-        }
-
-        document.body.removeChild(textArea);
-    }
-
-    function showToast(message, duration = 4000) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease-in';
-            setTimeout(() => toast.remove(), 300);
-        }, duration);
-    }
-
-    function downloadCalendar(url) {
-        showToast('Downloading...');
-        fetch(url)
-            .then(response => response.blob())
-            .then(blob => {
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.download = 'tide-calendar.ics';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(downloadUrl);
-            })
-            .catch(error => {
-                console.error('Download failed:', error);
-                window.open(url, '_blank');
-            });
-    }
-
-    function addToAppleCalendar(url) {
-        const webcalUrl = url.replace('https://', 'webcal://');
-        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-        const isMac = /Macintosh|MacIntel/.test(navigator.userAgent);
-        const isAndroid = /Android/.test(navigator.userAgent);
-
-        if (isAndroid) {
-            showToast('Apple Calendar not available on Android. Use Copy instead.', 5000);
+    function appleCal(url) {
+        const webcal = url.replace('https://', 'webcal://');
+        const isApple = /iPhone|iPad|iPod|Macintosh|MacIntel/.test(navigator.userAgent);
+        if (!isApple) {
+            toast('Apple Calendar works on Apple devices', 3000);
             return;
         }
-
-        if (!isIOS && !isMac) {
-            showToast('Apple Calendar works on iPhone, iPad, and Mac.', 5000);
-            return;
-        }
-
-        showToast('Opening Apple Calendar...');
-
-        if (isIOS) {
-            window.location.href = webcalUrl;
-        } else {
-            const newWindow = window.open(webcalUrl, '_blank');
-            if (!newWindow || newWindow.closed) {
-                window.location.href = webcalUrl;
-            }
-        }
+        window.location.href = webcal;
     }
 
-    function viewLog(calendarId) {
-        const modal = document.getElementById('log-modal');
-        const logContent = document.getElementById('log-content');
-
-        modal.classList.add('active');
-        logContent.textContent = 'Loading...';
-
-        fetch('get_log.php?id=' + encodeURIComponent(calendarId) + '&lines=50')
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    logContent.textContent = 'Error: ' + data.error;
-                } else if (data.log) {
-                    logContent.textContent = data.log;
-                } else {
-                    logContent.textContent = data.message || 'No log entries yet';
-                }
+    function viewLog(id) {
+        document.getElementById('log-modal').classList.add('active');
+        document.getElementById('log-content').textContent = 'Loading...';
+        fetch('get_log.php?id=' + encodeURIComponent(id) + '&lines=50')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('log-content').textContent = d.error ? 'Error: ' + d.error : (d.log || d.message || 'No logs yet');
             })
-            .catch(error => {
-                logContent.textContent = 'Failed to load log: ' + error.message;
+            .catch(e => {
+                document.getElementById('log-content').textContent = 'Failed: ' + e.message;
             });
     }
 
-    function closeLogModal() {
+    function closeModal() {
         document.getElementById('log-modal').classList.remove('active');
     }
 
-    // Close modal on backdrop click
-    document.getElementById('log-modal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeLogModal();
-        }
+    document.getElementById('log-modal').addEventListener('click', e => {
+        if (e.target.id === 'log-modal') closeModal();
     });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // Close modal on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeLogModal();
-        }
-    });
+    function toast(msg, dur = 2500) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'slideOut 0.2s ease-in forwards';
+            setTimeout(() => t.remove(), 200);
+        }, dur);
+    }
     </script>
 </body>
 </html>

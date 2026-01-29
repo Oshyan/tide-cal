@@ -8,6 +8,10 @@ function getCheckboxValue($key, $default) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         return isset($_POST[$key]);
     }
+    // Also check GET params for edit flow
+    if (isset($_GET[$key])) {
+        return $_GET[$key] === '1' || $_GET[$key] === 'true';
+    }
     return $default;
 }
 
@@ -45,29 +49,29 @@ $form_data = [
     'lat' => $_GET['lat'] ?? $station_data['lat'] ?? $_POST['lat'] ?? $default_config['lat'],
     'lon' => $_GET['lon'] ?? $station_data['lon'] ?? $_POST['lon'] ?? $default_config['lon'],
     'timezone' => $_POST['timezone'] ?? $_GET['timezone'] ?? ($station_data['timezone'] ?? $default_config['timezone']),
-    'year' => $_POST['year'] ?? $default_config['year'],
-    'unit' => $_POST['unit'] ?? $default_config['unit'],
+    'year' => $_GET['year'] ?? $_POST['year'] ?? $default_config['year'],
+    'unit' => $_GET['unit'] ?? $_POST['unit'] ?? $default_config['unit'],
     'include_low_tides' => getCheckboxValue('include_low_tides', $default_config['include_low_tides']),
-    'min_low_tide_value' => (float) ($_POST['min_low_tide_value'] ?? $default_config['min_low_tide_value']),
-    'low_time_filter' => $_POST['low_time_filter'] ?? $default_config['low_time_filter'],
-    'low_minutes_after_sunrise' => (int) ($_POST['low_minutes_after_sunrise'] ?? $default_config['low_minutes_after_sunrise']),
-    'low_minutes_before_sunset' => (int) ($_POST['low_minutes_before_sunset'] ?? $default_config['low_minutes_before_sunset']),
+    'min_low_tide_value' => (float) ($_GET['min_low_tide_value'] ?? $_POST['min_low_tide_value'] ?? $default_config['min_low_tide_value']),
+    'low_time_filter' => $_GET['low_time_filter'] ?? $_POST['low_time_filter'] ?? $default_config['low_time_filter'],
+    'low_minutes_after_sunrise' => (int) ($_GET['low_minutes_after_sunrise'] ?? $_POST['low_minutes_after_sunrise'] ?? $default_config['low_minutes_after_sunrise']),
+    'low_minutes_before_sunset' => (int) ($_GET['low_minutes_before_sunset'] ?? $_POST['low_minutes_before_sunset'] ?? $default_config['low_minutes_before_sunset']),
     'low_earliest_time_enabled' => getCheckboxValue('low_earliest_time_enabled', $default_config['low_earliest_time_enabled']),
-    'low_earliest_time' => $_POST['low_earliest_time'] ?? $default_config['low_earliest_time'],
+    'low_earliest_time' => $_GET['low_earliest_time'] ?? $_POST['low_earliest_time'] ?? $default_config['low_earliest_time'],
     'low_latest_time_enabled' => getCheckboxValue('low_latest_time_enabled', $default_config['low_latest_time_enabled']),
-    'low_latest_time' => $_POST['low_latest_time'] ?? $default_config['low_latest_time'],
+    'low_latest_time' => $_GET['low_latest_time'] ?? $_POST['low_latest_time'] ?? $default_config['low_latest_time'],
     'include_high_tides' => getCheckboxValue('include_high_tides', $default_config['include_high_tides']),
-    'high_tide_min_value' => (float) ($_POST['high_tide_min_value'] ?? $default_config['high_tide_min_value']),
-    'high_time_filter' => $_POST['high_time_filter'] ?? $default_config['high_time_filter'],
-    'high_minutes_after_sunrise' => (int) ($_POST['high_minutes_after_sunrise'] ?? $default_config['high_minutes_after_sunrise']),
-    'high_minutes_before_sunset' => (int) ($_POST['high_minutes_before_sunset'] ?? $default_config['high_minutes_before_sunset']),
+    'high_tide_min_value' => (float) ($_GET['high_tide_min_value'] ?? $_POST['high_tide_min_value'] ?? $default_config['high_tide_min_value']),
+    'high_time_filter' => $_GET['high_time_filter'] ?? $_POST['high_time_filter'] ?? $default_config['high_time_filter'],
+    'high_minutes_after_sunrise' => (int) ($_GET['high_minutes_after_sunrise'] ?? $_POST['high_minutes_after_sunrise'] ?? $default_config['high_minutes_after_sunrise']),
+    'high_minutes_before_sunset' => (int) ($_GET['high_minutes_before_sunset'] ?? $_POST['high_minutes_before_sunset'] ?? $default_config['high_minutes_before_sunset']),
     'high_earliest_time_enabled' => getCheckboxValue('high_earliest_time_enabled', $default_config['high_earliest_time_enabled']),
-    'high_earliest_time' => $_POST['high_earliest_time'] ?? $default_config['high_earliest_time'],
+    'high_earliest_time' => $_GET['high_earliest_time'] ?? $_POST['high_earliest_time'] ?? $default_config['high_earliest_time'],
     'high_latest_time_enabled' => getCheckboxValue('high_latest_time_enabled', $default_config['high_latest_time_enabled']),
-    'high_latest_time' => $_POST['high_latest_time'] ?? $default_config['high_latest_time'],
+    'high_latest_time' => $_GET['high_latest_time'] ?? $_POST['high_latest_time'] ?? $default_config['high_latest_time'],
     'include_sunrise_events' => getCheckboxValue('include_sunrise_events', $default_config['include_sunrise_events']),
     'include_sunset_events' => getCheckboxValue('include_sunset_events', $default_config['include_sunset_events']),
-    'sun_events_match_tide_days' => isset($_POST['sun_events_match_tide_days']) ? (bool)$_POST['sun_events_match_tide_days'] : $default_config['sun_events_match_tide_days']
+    'sun_events_match_tide_days' => isset($_GET['sun_events_match_tide_days']) ? (bool)$_GET['sun_events_match_tide_days'] : (isset($_POST['sun_events_match_tide_days']) ? (bool)$_POST['sun_events_match_tide_days'] : $default_config['sun_events_match_tide_days'])
 ];
 
 // Initialize variables
@@ -951,6 +955,62 @@ function buildSuccessMessage($stats, $config) {
         }
         .copy-btn:hover { background: var(--primary-dark); }
 
+        .instructions-panel {
+            margin-top: 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+        }
+        .instructions-panel summary {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            color: var(--gray-600);
+            font-weight: 500;
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+        }
+        .instructions-panel summary:hover {
+            color: var(--primary);
+        }
+        .instructions-panel[open] summary {
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .instructions-content {
+            padding: 0.75rem;
+        }
+        .instruction-group {
+            margin-bottom: 0.75rem;
+        }
+        .instruction-group:last-of-type {
+            margin-bottom: 0.5rem;
+        }
+        .instruction-group strong {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--gray-700);
+            margin-bottom: 0.25rem;
+        }
+        .instruction-group ol {
+            margin: 0;
+            padding-left: 1.25rem;
+            color: var(--gray-600);
+            font-size: 0.75rem;
+            line-height: 1.5;
+        }
+        .instruction-group ol li {
+            margin-bottom: 0.15rem;
+        }
+        .instruction-group a {
+            color: var(--primary);
+        }
+        .instructions-note {
+            margin: 0.5rem 0 0;
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            font-style: italic;
+        }
+
         .calendar-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -1102,6 +1162,36 @@ function buildSuccessMessage($stats, $config) {
                     <?php echo htmlspecialchars($calendar_url); ?>
                     <button class="copy-btn" onclick="copyToClipboard('<?php echo htmlspecialchars($calendar_url); ?>')">Copy</button>
                 </div>
+
+                <details class="instructions-panel">
+                    <summary>How to add to your calendar</summary>
+                    <div class="instructions-content">
+                        <div class="instruction-group">
+                            <strong>Google Calendar</strong>
+                            <ol>
+                                <li>Copy the URL above</li>
+                                <li>Go to <a href="https://calendar.google.com" target="_blank">calendar.google.com</a></li>
+                                <li>Click + next to "Other calendars" &rarr; "From URL"</li>
+                                <li>Paste the URL and click "Add calendar"</li>
+                            </ol>
+                        </div>
+                        <div class="instruction-group">
+                            <strong>Apple Calendar (Mac/iOS)</strong>
+                            <ol>
+                                <li>Click the Apple button above, or</li>
+                                <li>Copy URL &rarr; File &rarr; New Calendar Subscription &rarr; Paste</li>
+                            </ol>
+                        </div>
+                        <div class="instruction-group">
+                            <strong>Outlook</strong>
+                            <ol>
+                                <li>Copy the URL above</li>
+                                <li>Add calendar &rarr; Subscribe from web &rarr; Paste URL</li>
+                            </ol>
+                        </div>
+                        <p class="instructions-note">Subscribed calendars update automatically when you regenerate.</p>
+                    </div>
+                </details>
             </div>
             <?php endif; ?>
 
